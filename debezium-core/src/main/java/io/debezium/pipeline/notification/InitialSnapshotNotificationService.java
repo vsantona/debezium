@@ -24,6 +24,7 @@ public class InitialSnapshotNotificationService<P extends Partition, O extends O
     public static final String NONE = "<none>";
     public static final String CONNECTOR_NAME = "connector_name";
     public static final String STATUS = "status";
+    public static final String SCANNED_COLLECTION = "scanned_collection";
 
     private final NotificationService<P, O> notificationService;
     private final CommonConnectorConfig connectorConfig;
@@ -35,35 +36,52 @@ public class InitialSnapshotNotificationService<P extends Partition, O extends O
         this.clock = clock;
     }
 
+    public <T extends DataCollectionId> void notifyTableInProgress(P partition,
+                                                                   OffsetContext offsetContext,
+                                                                   String currentCollection) {
+        notificationService.notify(buildNotificationWith(SnapshotStatus.TABLE_SCAN_IN_PROGRESS.name(),
+                Map.of(SCANNED_COLLECTION, currentCollection)),
+                Offsets.of(partition, offsetContext));
+
+    }
+
+    public <T extends DataCollectionId> void notifyCompletedTable(P partition,
+                                                                  OffsetContext offsetContext,
+                                                                  String currentCollection) {
+        notificationService.notify(buildNotificationWith(SnapshotStatus.TABLE_SCAN_COMPLETED.name(),
+                Map.of(SCANNED_COLLECTION, currentCollection)),
+                Offsets.of(partition, offsetContext));
+
+    }
+
     public <T extends DataCollectionId> void notifyStarted(P partition, OffsetContext offsetContext) {
 
-        notificationService.notify(buildNotificationWith(SnapshotResult.SnapshotResultStatus.STARTED,
-                Map.of()), Offsets.of(partition, offsetContext));
+        notificationService.notify(buildNotificationWith(
+                SnapshotResult.SnapshotResultStatus.STARTED.name(), Map.of()), Offsets.of(partition, offsetContext));
     }
 
     public <T extends DataCollectionId> void notifyAborted(P partition, OffsetContext offsetContext) {
 
-        notificationService.notify(buildNotificationWith(SnapshotResult.SnapshotResultStatus.ABORTED,
-                Map.of()),
+        notificationService.notify(buildNotificationWith(
+                SnapshotResult.SnapshotResultStatus.ABORTED.name(), Map.of()),
                 Offsets.of(partition, offsetContext));
     }
 
     public <T extends DataCollectionId> void notifyCompleted(P partition, OffsetContext offsetContext) {
 
-        notificationService.notify(buildNotificationWith(SnapshotResult.SnapshotResultStatus.COMPLETED,
-                Map.of()),
+        notificationService.notify(buildNotificationWith(
+                SnapshotResult.SnapshotResultStatus.COMPLETED.name(), Map.of()),
                 Offsets.of(partition, offsetContext));
     }
 
     public void notifySkipped(P partition, OffsetContext offsetContext) {
 
-        notificationService.notify(buildNotificationWith(SnapshotResult.SnapshotResultStatus.SKIPPED,
-                Map.of()),
+        notificationService.notify(buildNotificationWith(
+                SnapshotResult.SnapshotResultStatus.SKIPPED.name(), Map.of()),
                 Offsets.of(partition, offsetContext));
     }
 
-    private <T extends DataCollectionId> Notification buildNotificationWith(SnapshotResult.SnapshotResultStatus type,
-                                                                            Map<String, String> additionalData) {
+    private <T extends DataCollectionId> Notification buildNotificationWith(final String snapshotStatus, Map<String, String> additionalData) {
 
         Map<String, String> fullMap = new HashMap<>(additionalData);
 
@@ -73,7 +91,7 @@ public class InitialSnapshotNotificationService<P extends Partition, O extends O
         return Notification.Builder.builder()
                 .withId(UUID.randomUUID().toString())
                 .withAggregateType(INITIAL_SNAPSHOT)
-                .withType(type.name())
+                .withType(snapshotStatus)
                 .withAdditionalData(fullMap)
                 .withTimestamp(Instant.now(clock).toEpochMilli())
                 .build();
