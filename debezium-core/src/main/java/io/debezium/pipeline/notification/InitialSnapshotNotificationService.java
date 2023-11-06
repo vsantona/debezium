@@ -24,7 +24,6 @@ public class InitialSnapshotNotificationService<P extends Partition, O extends O
     public static final String NONE = "<none>";
     public static final String CONNECTOR_NAME = "connector_name";
     public static final String STATUS = "status";
-    public static final String DATA_COLLECTIONS = "data_collections";
     public static final String SCANNED_COLLECTION = "scanned_collection";
 
 
