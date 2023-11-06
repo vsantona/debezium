@@ -26,7 +26,6 @@ public class InitialSnapshotNotificationService<P extends Partition, O extends O
     public static final String STATUS = "status";
     public static final String SCANNED_COLLECTION = "scanned_collection";
 
-
     private final NotificationService<P, O> notificationService;
     private final CommonConnectorConfig connectorConfig;
     private final Clock clock;
@@ -41,7 +40,7 @@ public class InitialSnapshotNotificationService<P extends Partition, O extends O
                                                                 OffsetContext offsetContext,
                                                                 String currentCollection) {
         notificationService.notify(buildNotificationWith(SnapshotStatus.TABLE_SCAN_STARTED.name(),
-                        Map.of(SCANNED_COLLECTION, currentCollection)),
+                Map.of(SCANNED_COLLECTION, currentCollection)),
                 Offsets.of(partition, offsetContext));
 
     }
@@ -50,35 +49,35 @@ public class InitialSnapshotNotificationService<P extends Partition, O extends O
                                                                   OffsetContext offsetContext,
                                                                   String currentCollection) {
         notificationService.notify(buildNotificationWith(SnapshotStatus.TABLE_SCAN_COMPLETED.name(),
-                        Map.of(SCANNED_COLLECTION, currentCollection)),
+                Map.of(SCANNED_COLLECTION, currentCollection)),
                 Offsets.of(partition, offsetContext));
 
     }
-
 
     public <T extends DataCollectionId> void notifyStarted(P partition, OffsetContext offsetContext) {
 
         notificationService.notify(buildNotificationWith(
                 SnapshotResult.SnapshotResultStatus.STARTED.name(), Map.of()), Offsets.of(partition, offsetContext));
     }
+
     public <T extends DataCollectionId> void notifyAborted(P partition, OffsetContext offsetContext) {
 
         notificationService.notify(buildNotificationWith(
-                        SnapshotResult.SnapshotResultStatus.ABORTED.name(), Map.of()),
+                SnapshotResult.SnapshotResultStatus.ABORTED.name(), Map.of()),
                 Offsets.of(partition, offsetContext));
     }
 
     public <T extends DataCollectionId> void notifyCompleted(P partition, OffsetContext offsetContext) {
 
         notificationService.notify(buildNotificationWith(
-                        SnapshotResult.SnapshotResultStatus.COMPLETED.name(), Map.of()),
+                SnapshotResult.SnapshotResultStatus.COMPLETED.name(), Map.of()),
                 Offsets.of(partition, offsetContext));
     }
 
     public void notifySkipped(P partition, OffsetContext offsetContext) {
 
         notificationService.notify(buildNotificationWith(
-                        SnapshotResult.SnapshotResultStatus.SKIPPED.name(), Map.of()),
+                SnapshotResult.SnapshotResultStatus.SKIPPED.name(), Map.of()),
                 Offsets.of(partition, offsetContext));
     }
 
