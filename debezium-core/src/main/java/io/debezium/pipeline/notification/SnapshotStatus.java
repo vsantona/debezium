@@ -11,6 +11,7 @@ public enum SnapshotStatus {
     RESUMED,
     ABORTED,
     IN_PROGRESS,
+    TABLE_SCAN_STARTED,
     TABLE_SCAN_COMPLETED,
     COMPLETED
 }
