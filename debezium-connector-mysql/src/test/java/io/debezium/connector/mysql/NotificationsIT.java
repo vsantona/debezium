@@ -88,7 +88,7 @@ public class NotificationsIT extends AbstractNotificationsIT<MySqlConnector> {
                     notifications.add(r);
                 }
             });
-            return notifications.size() == 2;
+            return notifications.size() == 18;
         });
 
         assertThat(notifications).hasSize(18);
