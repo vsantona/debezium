@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.AttributeNotFoundException;
@@ -184,37 +183,6 @@ public class NotificationsIT extends AbstractNotificationsIT<MySqlConnector> {
                 .hasFieldOrPropertyWithValue("type", "COMPLETED")
                 .hasFieldOrPropertyWithValue("additionalData", Map.of("connector_name", server()));
         assertThat(notification.getTimestamp()).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
-    }
-
-    private void assertTableNotificationsSentToJmx(List<Notification> notifications, String tableName) {
-        Optional<Notification> tableNotification;
-        tableNotification = notifications.stream()
-                .filter(v -> v.getAdditionalData().get("type").equals("TABLE_SCAN_IN_PROGRESS") && v.getAdditionalData().containsValue(tableName))
-                .findAny();
-
-        assertThat(tableNotification.isPresent()).isTrue();
-        assertThat(tableNotification.get().getAggregateType()).isEqualTo("Initial Snapshot");
-        assertThat(tableNotification.get().getTimestamp()).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
-
-    }
-
-    private void assertTableNotificationsSentToTopic(List<SourceRecord> notifications, String tableName) {
-        Optional<Struct> tableNotification;
-        tableNotification = notifications.stream()
-                .map(s -> ((Struct) s.value()))
-                .filter(v -> v.getString("type").equals("TABLE_SCAN_IN_PROGRESS") && v.getMap("additional_data").containsValue(tableName))
-                .findAny();
-        assertThat(tableNotification.isPresent()).isTrue();
-        assertThat(tableNotification.get().getString("aggregate_type")).isEqualTo("Initial Snapshot");
-        assertThat(tableNotification.get().getInt64("timestamp")).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
-
-        tableNotification = notifications.stream()
-                .map(s -> ((Struct) s.value()))
-                .filter(v -> v.getString("type").equals("TABLE_SCAN_COMPLETED") && v.getMap("additional_data").containsValue(tableName))
-                .findAny();
-        assertThat(tableNotification.isPresent()).isTrue();
-        assertThat(tableNotification.get().getString("aggregate_type")).isEqualTo("Initial Snapshot");
-        assertThat(tableNotification.get().getInt64("timestamp")).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
     }
 
     @Override

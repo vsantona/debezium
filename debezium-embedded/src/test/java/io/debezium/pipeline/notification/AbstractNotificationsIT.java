@@ -8,9 +8,11 @@ package io.debezium.pipeline.notification;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.management.ManagementFactory;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,8 +31,11 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceConnector;
+import org.apache.kafka.connect.source.SourceRecord;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.data.Percentage;
 import org.junit.Test;
 
 import io.debezium.config.CommonConnectorConfig;
@@ -91,6 +96,37 @@ public abstract class AbstractNotificationsIT<T extends SourceConnector> extends
         Assertions.assertThat(logInterceptor.containsErrorMessage(
                 "Connector configuration is not valid. The 'notification.sink.topic.name' value is invalid: Notification topic name must be provided when kafka notification channel is enabled"))
                 .isTrue();
+    }
+
+    protected void assertTableNotificationsSentToJmx(List<Notification> notifications, String tableName) {
+        Optional<Notification> tableNotification;
+        tableNotification = notifications.stream()
+                .filter(v -> v.getAdditionalData().get("type").equals("TABLE_SCAN_IN_PROGRESS") && v.getAdditionalData().containsValue(tableName))
+                .findAny();
+
+        assertThat(tableNotification.isPresent()).isTrue();
+        assertThat(tableNotification.get().getAggregateType()).isEqualTo("Initial Snapshot");
+        assertThat(tableNotification.get().getTimestamp()).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
+
+    }
+
+    protected void assertTableNotificationsSentToTopic(List<SourceRecord> notifications, String tableName) {
+        Optional<Struct> tableNotification;
+        tableNotification = notifications.stream()
+                .map(s -> ((Struct) s.value()))
+                .filter(v -> v.getString("type").equals("TABLE_SCAN_IN_PROGRESS") && v.getMap("additional_data").containsValue(tableName))
+                .findAny();
+        assertThat(tableNotification.isPresent()).isTrue();
+        assertThat(tableNotification.get().getString("aggregate_type")).isEqualTo("Initial Snapshot");
+        assertThat(tableNotification.get().getInt64("timestamp")).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
+
+        tableNotification = notifications.stream()
+                .map(s -> ((Struct) s.value()))
+                .filter(v -> v.getString("type").equals("TABLE_SCAN_COMPLETED") && v.getMap("additional_data").containsValue(tableName))
+                .findAny();
+        assertThat(tableNotification.isPresent()).isTrue();
+        assertThat(tableNotification.get().getString("aggregate_type")).isEqualTo("Initial Snapshot");
+        assertThat(tableNotification.get().getInt64("timestamp")).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
     }
 
     protected List<Notification> readNotificationFromJmx()
