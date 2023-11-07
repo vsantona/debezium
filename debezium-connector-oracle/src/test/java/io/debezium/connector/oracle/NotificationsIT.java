@@ -91,7 +91,10 @@ public class NotificationsIT extends AbstractNotificationsIT<OracleConnector> {
         Assertions.assertThat(((Struct) sourceRecord.value()).getString("aggregate_type")).isEqualTo("Initial Snapshot");
         Assertions.assertThat(((Struct) sourceRecord.value()).getString("type")).isEqualTo("STARTED");
         Assertions.assertThat(((Struct) sourceRecord.value()).getInt64("timestamp")).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
-        sourceRecord = notifications.get(1);
+
+        assertTableNotificationsSentToTopic(notifications, "a");
+
+        sourceRecord = notifications.get(notifications.size() - 1);
         Assertions.assertThat(sourceRecord.topic()).isEqualTo("io.debezium.notification");
         Assertions.assertThat(((Struct) sourceRecord.value()).getString("aggregate_type")).isEqualTo("Initial Snapshot");
         Assertions.assertThat(((Struct) sourceRecord.value()).getString("type")).isEqualTo(snapshotStatusResult());
@@ -122,7 +125,10 @@ public class NotificationsIT extends AbstractNotificationsIT<OracleConnector> {
                 .hasFieldOrPropertyWithValue("aggregateType", "Initial Snapshot")
                 .hasFieldOrPropertyWithValue("type", "STARTED")
                 .hasFieldOrProperty("timestamp");
-        assertThat(notifications.get(1))
+
+        assertTableNotificationsSentToJmx(notifications, "a");
+
+        assertThat(notifications.get(notifications.size() - 1))
                 .hasFieldOrPropertyWithValue("aggregateType", "Initial Snapshot")
                 .hasFieldOrPropertyWithValue("type", snapshotStatusResult())
                 .hasFieldOrProperty("timestamp");
@@ -163,8 +169,8 @@ public class NotificationsIT extends AbstractNotificationsIT<OracleConnector> {
                 .hasFieldOrPropertyWithValue("additionalData", Map.of("connector_name", server()));
         assertThat(notification.getTimestamp()).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
 
-        assertThat(jmxNotifications.get(1)).hasFieldOrPropertyWithValue("message", "Initial Snapshot generated a notification");
-        notification = mapper.readValue(jmxNotifications.get(1).getUserData().toString(), Notification.class);
+        assertThat(jmxNotifications.get(jmxNotifications.size() - 1)).hasFieldOrPropertyWithValue("message", "Initial Snapshot generated a notification");
+        notification = mapper.readValue(jmxNotifications.get(jmxNotifications.size() - 1).getUserData().toString(), Notification.class);
         assertThat(notification)
                 .hasFieldOrPropertyWithValue("aggregateType", "Initial Snapshot")
                 .hasFieldOrPropertyWithValue("type", "COMPLETED")
