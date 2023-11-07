@@ -44,8 +44,12 @@ import io.debezium.pipeline.notification.AbstractNotificationsIT;
 import io.debezium.pipeline.notification.Notification;
 import io.debezium.pipeline.notification.channels.SinkNotificationChannel;
 import io.debezium.util.Testing;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NotificationsIT extends AbstractNotificationsIT<MySqlConnector> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationsIT.class);
 
     protected static final String SERVER_NAME = "is_test";
     protected final UniqueDatabase DATABASE = new UniqueDatabase(SERVER_NAME, "incremental_snapshot-test").withDbHistoryPath(SCHEMA_HISTORY_PATH);
@@ -124,6 +128,7 @@ public class NotificationsIT extends AbstractNotificationsIT<MySqlConnector> {
 
     private static void assertTableNotification(List<SourceRecord> notifications, String a, SourceRecord sourceRecord, String TABLE_SCAN_COMPLETED) {
         Optional<SourceRecord> any = notifications.stream()
+                .peek(n -> LOGGER.info(((Struct) n.value()).getMap("additional_data").toString()))
                 .filter(n -> (((Struct) n.value()).getMap("additional_data")).containsValue(a)).findAny();
         Assertions.assertThat(any.isPresent()).isTrue();
         Assertions.assertThat(((Struct) sourceRecord.value()).getString("aggregate_type")).isEqualTo("Initial Snapshot");
