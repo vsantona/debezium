@@ -34,6 +34,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,8 +46,6 @@ import io.debezium.pipeline.notification.AbstractNotificationsIT;
 import io.debezium.pipeline.notification.Notification;
 import io.debezium.pipeline.notification.channels.SinkNotificationChannel;
 import io.debezium.util.Testing;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class NotificationsIT extends AbstractNotificationsIT<MySqlConnector> {
 
