@@ -129,7 +129,7 @@ public class NotificationsIT extends AbstractNotificationsIT<MySqlConnector> {
     private static void assertTableNotification(List<SourceRecord> notifications, String tableName, SourceRecord sourceRecord, String status) {
         Optional<Struct> tableNotification = notifications.stream()
                 .map(s -> ((Struct) s.value()))
-                .filter(v -> v.getString("type").equals(status) && v.getMap("additional_data").containsValue("." + tableName))
+                .filter(v -> v.getString("type").equals(status) && v.getMap("additional_data").containsValue(tableName))
                 .findAny();
         Assertions.assertThat(tableNotification.isPresent()).isTrue();
         Assertions.assertThat(tableNotification.get().getString("aggregate_type")).isEqualTo("Initial Snapshot");
