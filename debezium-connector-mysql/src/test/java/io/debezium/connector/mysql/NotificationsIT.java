@@ -6,14 +6,25 @@
 
 package io.debezium.connector.mysql;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.debezium.config.CommonConnectorConfig;
-import io.debezium.config.Configuration;
-import io.debezium.pipeline.notification.AbstractNotificationsIT;
-import io.debezium.pipeline.notification.Notification;
-import io.debezium.pipeline.notification.channels.SinkNotificationChannel;
-import io.debezium.util.Testing;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.nio.file.Path;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.IntrospectionException;
+import javax.management.MBeanException;
+import javax.management.MBeanNotificationInfo;
+import javax.management.MalformedObjectNameException;
+import javax.management.ReflectionException;
+
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.assertj.core.api.Assertions;
@@ -26,23 +37,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.IntrospectionException;
-import javax.management.MBeanException;
-import javax.management.MBeanNotificationInfo;
-import javax.management.MalformedObjectNameException;
-import javax.management.ReflectionException;
-import java.nio.file.Path;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import io.debezium.config.CommonConnectorConfig;
+import io.debezium.config.Configuration;
+import io.debezium.pipeline.notification.AbstractNotificationsIT;
+import io.debezium.pipeline.notification.Notification;
+import io.debezium.pipeline.notification.channels.SinkNotificationChannel;
+import io.debezium.util.Testing;
 
 public class NotificationsIT extends AbstractNotificationsIT<MySqlConnector> {
 
