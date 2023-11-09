@@ -45,7 +45,7 @@ import io.debezium.util.Testing;
 
 public class NotificationsIT extends AbstractNotificationsIT<SqlServerConnector> {
 
-    private static final List<String> tableNames = List.of("tablea", "tableb");
+    private static final List<String> tableNames = List.of("tablea");
 
     @Before
     public void before() throws SQLException {
