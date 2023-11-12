@@ -118,8 +118,8 @@ public abstract class AbstractNotificationsIT<T extends SourceConnector> extends
         Optional<Struct> tableNotification;
         tableNotification = notifications.stream()
                 .map(s -> ((Struct) s.value()))
-                .peek(n -> System.out.println("assertTableNotificationsSentToTopic" + n.getMap("additional_data").toString()))
-                .peek(n -> LOGGER.info("assertTableNotificationsSentToTopic" + n.getMap("additional_data").toString()))
+                .peek(n -> System.out.println("assertTableNotificationsSentToTopic: type: " + n.getString("type") + " map: " + n.getMap("additional_data").toString()))
+                .peek(n -> LOGGER.info("assertTableNotificationsSentToTopic: type: " + n.getString("type") + " map: " + n.getMap("additional_data").toString()))
                 .filter(v -> v.getString("type").equals("TABLE_SCAN_IN_PROGRESS") && v.getMap("additional_data").containsValue(tableName))
                 .findAny();
         assertThat(tableNotification.isPresent()).isTrue();
