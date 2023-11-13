@@ -105,7 +105,7 @@ public abstract class AbstractNotificationsIT<T extends SourceConnector> extends
     protected void assertTableNotificationsSentToJmx(List<Notification> notifications, String tableName) {
         Optional<Notification> tableNotification;
         tableNotification = notifications.stream()
-                .filter(v -> v.getAdditionalData().get("type").equals("TABLE_SCAN_IN_PROGRESS") && v.getAdditionalData().containsValue(tableName))
+                .filter(v -> v.getType().equals("TABLE_SCAN_IN_PROGRESS") && v.getAdditionalData().containsValue(tableName))
                 .findAny();
 
         assertThat(tableNotification.isPresent()).isTrue();
