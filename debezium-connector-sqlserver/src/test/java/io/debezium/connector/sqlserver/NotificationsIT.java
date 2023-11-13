@@ -45,7 +45,7 @@ import io.debezium.util.Testing;
 
 public class NotificationsIT extends AbstractNotificationsIT<SqlServerConnector> {
 
-    private static final List<String> tableNames = List.of("tablea");
+    private static final List<String> tableNames = List.of("tablea", "tableb");
 
     @Before
     public void before() throws SQLException {
@@ -87,10 +87,10 @@ public class NotificationsIT extends AbstractNotificationsIT<SqlServerConnector>
                     notifications.add(r);
                 }
             });
-            return notifications.size() == 2;
+            return notifications.size() == 4;
         });
 
-        assertThat(notifications).hasSize(2);
+        assertThat(notifications).hasSize(4);
         SourceRecord sourceRecord = notifications.get(0);
         Assertions.assertThat(sourceRecord.topic()).isEqualTo("io.debezium.notification");
         Assertions.assertThat(((Struct) sourceRecord.value()).getString("aggregate_type")).isEqualTo("Initial Snapshot");
@@ -125,7 +125,7 @@ public class NotificationsIT extends AbstractNotificationsIT<SqlServerConnector>
 
         final List<Notification> notifications = readNotificationFromJmx();
 
-        assertThat(notifications).hasSize(2);
+        assertThat(notifications).hasSize(4);
         assertThat(notifications.get(0))
                 .hasFieldOrPropertyWithValue("aggregateType", "Initial Snapshot")
                 .hasFieldOrPropertyWithValue("type", "STARTED")

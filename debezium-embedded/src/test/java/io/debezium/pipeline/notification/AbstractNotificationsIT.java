@@ -37,8 +37,6 @@ import org.apache.kafka.connect.source.SourceRecord;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Percentage;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.debezium.config.CommonConnectorConfig;
 import io.debezium.config.Configuration;
@@ -48,8 +46,6 @@ import io.debezium.pipeline.notification.channels.SinkNotificationChannel;
 import io.debezium.pipeline.notification.channels.jmx.JmxNotificationChannelMXBean;
 
 public abstract class AbstractNotificationsIT<T extends SourceConnector> extends AbstractConnectorTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNotificationsIT.class);
 
     protected abstract Class<T> connectorClass();
 
@@ -105,7 +101,7 @@ public abstract class AbstractNotificationsIT<T extends SourceConnector> extends
     protected void assertTableNotificationsSentToJmx(List<Notification> notifications, String tableName) {
         Optional<Notification> tableNotification;
         tableNotification = notifications.stream()
-                .filter(v -> v.getAdditionalData().get("type").equals("TABLE_SCAN_IN_PROGRESS") && v.getAdditionalData().containsValue(tableName))
+                .filter(v -> v.getType().equals("TABLE_SCAN_IN_PROGRESS") && v.getAdditionalData().containsValue(tableName))
                 .findAny();
 
         assertThat(tableNotification.isPresent()).isTrue();
@@ -118,8 +114,6 @@ public abstract class AbstractNotificationsIT<T extends SourceConnector> extends
         Optional<Struct> tableNotification;
         tableNotification = notifications.stream()
                 .map(s -> ((Struct) s.value()))
-                .peek(n -> System.out.println("assertTableNotificationsSentToTopic: type: " + n.getString("type") + " map: " + n.getMap("additional_data").toString()))
-                .peek(n -> LOGGER.info("assertTableNotificationsSentToTopic: type: " + n.getString("type") + " map: " + n.getMap("additional_data").toString()))
                 .filter(v -> v.getString("type").equals("TABLE_SCAN_IN_PROGRESS") && v.getMap("additional_data").containsValue(tableName))
                 .findAny();
         assertThat(tableNotification.isPresent()).isTrue();

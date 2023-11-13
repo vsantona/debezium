@@ -453,7 +453,6 @@ public abstract class RelationalSnapshotChangeEventSource<P extends Partition, O
                 boolean lastTable = tableOrder == tableCount && snapshotMaxThreads == 1;
                 String selectStatement = queryTables.get(tableId);
                 OptionalLong rowCount = rowCountTables.get(tableId);
-                LOGGER.info("notifyTableInProgress: " + tableId.table());
                 notificationService.initialSnapshotNotificationService().notifyTableInProgress(
                         snapshotContext.partition,
                         snapshotContext.offset,
