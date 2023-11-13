@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -128,7 +129,7 @@ public class NotificationsIT extends AbstractMongoConnectorIT {
                     notifications.add(r);
                 }
             });
-            return notifications.size() == 2;
+            return notifications.size() == 4;
         });
 
         assertThat(notifications).hasSize(2);
@@ -137,7 +138,11 @@ public class NotificationsIT extends AbstractMongoConnectorIT {
         Assertions.assertThat(((Struct) sourceRecord.value()).getString("aggregate_type")).isEqualTo("Initial Snapshot");
         Assertions.assertThat(((Struct) sourceRecord.value()).getString("type")).isEqualTo("STARTED");
         Assertions.assertThat(((Struct) sourceRecord.value()).getInt64("timestamp")).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
-        sourceRecord = notifications.get(1);
+
+        assertTableNotificationsSentToTopic(notifications, "dbA.c1");
+        assertTableNotificationsSentToTopic(notifications, "dbA.c2");
+
+        sourceRecord = notifications.get(notifications.size() - 1);
         Assertions.assertThat(sourceRecord.topic()).isEqualTo("io.debezium.notification");
         Assertions.assertThat(((Struct) sourceRecord.value()).getString("aggregate_type")).isEqualTo("Initial Snapshot");
         Assertions.assertThat(((Struct) sourceRecord.value()).getString("type")).isEqualTo("COMPLETED");
@@ -196,6 +201,10 @@ public class NotificationsIT extends AbstractMongoConnectorIT {
                 .hasFieldOrPropertyWithValue("aggregateType", "Initial Snapshot")
                 .hasFieldOrPropertyWithValue("type", "STARTED")
                 .hasFieldOrProperty("timestamp");
+
+        assertTableNotificationsSentToJmx(notifications, "dbA.c1");
+        assertTableNotificationsSentToJmx(notifications, "dbA.c2");
+
         assertThat(notifications.get(1))
                 .hasFieldOrPropertyWithValue("aggregateType", "Initial Snapshot")
                 .hasFieldOrPropertyWithValue("type", "COMPLETED")
@@ -246,6 +255,37 @@ public class NotificationsIT extends AbstractMongoConnectorIT {
                 .hasFieldOrPropertyWithValue("type", "COMPLETED")
                 .hasFieldOrPropertyWithValue("additionalData", Map.of("connector_name", "mongo1"));
         assertThat(notification.getTimestamp()).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
+    }
+
+    private void assertTableNotificationsSentToJmx(List<Notification> notifications, String tableName) {
+        Optional<Notification> tableNotification;
+        tableNotification = notifications.stream()
+                .filter(v -> v.getType().equals("TABLE_SCAN_IN_PROGRESS") && v.getAdditionalData().containsValue(tableName))
+                .findAny();
+
+        assertThat(tableNotification.isPresent()).isTrue();
+        assertThat(tableNotification.get().getAggregateType()).isEqualTo("Initial Snapshot");
+        assertThat(tableNotification.get().getTimestamp()).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
+
+    }
+
+    private void assertTableNotificationsSentToTopic(List<SourceRecord> notifications, String tableName) {
+        Optional<Struct> tableNotification;
+        tableNotification = notifications.stream()
+                .map(s -> ((Struct) s.value()))
+                .filter(v -> v.getString("type").equals("TABLE_SCAN_IN_PROGRESS") && v.getMap("additional_data").containsValue(tableName))
+                .findAny();
+        assertThat(tableNotification.isPresent()).isTrue();
+        assertThat(tableNotification.get().getString("aggregate_type")).isEqualTo("Initial Snapshot");
+        assertThat(tableNotification.get().getInt64("timestamp")).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
+
+        tableNotification = notifications.stream()
+                .map(s -> ((Struct) s.value()))
+                .filter(v -> v.getString("type").equals("TABLE_SCAN_COMPLETED") && v.getMap("additional_data").containsValue(tableName))
+                .findAny();
+        assertThat(tableNotification.isPresent()).isTrue();
+        assertThat(tableNotification.get().getString("aggregate_type")).isEqualTo("Initial Snapshot");
+        assertThat(tableNotification.get().getInt64("timestamp")).isCloseTo(Instant.now().toEpochMilli(), Percentage.withPercentage(1));
     }
 
     private List<Notification> readNotificationFromJmx()
