@@ -470,7 +470,8 @@ public class MongoDbSnapshotChangeEventSource extends AbstractSnapshotChangeEven
                     snapshotContext.offset.markSnapshotRecord(SnapshotRecord.LAST);
                 }
 
-                notificationService.initialSnapshotNotificationService().notifyCompletedTable(snapshotContext.partition, snapshotContext.offset, collectionId.identifier());
+                notificationService.initialSnapshotNotificationService().notifyCompletedTable(snapshotContext.partition, snapshotContext.offset,
+                        collectionId.identifier());
                 LOGGER.info("\t Finished snapshotting {} records for collection '{}'; total duration '{}'", docs, collectionId,
                         Strings.duration(clock.currentTimeInMillis() - exportStart));
                 snapshotProgressListener.dataCollectionSnapshotCompleted(snapshotContext.partition, collectionId, docs);
