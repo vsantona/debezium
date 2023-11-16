@@ -205,7 +205,7 @@ public class NotificationsIT extends AbstractMongoConnectorIT {
         assertTableNotificationsSentToJmx(notifications, "dbA.c1");
         assertTableNotificationsSentToJmx(notifications, "dbA.c2");
 
-        assertThat(notifications.get(1))
+        assertThat(notifications.get(notifications.size() - 1))
                 .hasFieldOrPropertyWithValue("aggregateType", "Initial Snapshot")
                 .hasFieldOrPropertyWithValue("type", "COMPLETED")
                 .hasFieldOrProperty("timestamp");
