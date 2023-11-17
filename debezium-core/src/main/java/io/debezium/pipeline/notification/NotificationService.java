@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.kafka.connect.source.SourceRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.debezium.config.CommonConnectorConfig;
 import io.debezium.function.BlockingConsumer;
@@ -26,6 +28,8 @@ import io.debezium.schema.SchemaFactory;
  * This service can be used to send notification to available and enabled channels
  */
 public class NotificationService<P extends Partition, O extends OffsetContext> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Notification.class);
 
     private final List<NotificationChannel> notificationChannels;
     private final List<String> enabledChannels;
@@ -73,6 +77,8 @@ public class NotificationService<P extends Partition, O extends OffsetContext> {
      * @param offsets the offset to send together with Kafka {@link SourceRecord}
      */
     public void notify(Notification notification, Offsets<P, ? extends OffsetContext> offsets) {
+
+        LOG.info("[NOTIFICATION-SENDING] " + notification.toString());
 
         this.notificationChannels.stream()
                 .filter(isEnabled())
