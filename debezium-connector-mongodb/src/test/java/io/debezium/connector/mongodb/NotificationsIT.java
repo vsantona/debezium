@@ -196,7 +196,10 @@ public class NotificationsIT extends AbstractMongoConnectorIT {
 
         List<Notification> notifications = readNotificationFromJmx();
 
-        assertThat(notifications).hasSize(2);
+        notifications
+                .forEach(notification -> System.out.println("[notificationCorrectlySentOnJmx]:" + notification.toString()));
+
+        assertThat(notifications).hasSize(4);
         assertThat(notifications.get(0))
                 .hasFieldOrPropertyWithValue("aggregateType", "Initial Snapshot")
                 .hasFieldOrPropertyWithValue("type", "STARTED")
