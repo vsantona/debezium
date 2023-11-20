@@ -436,7 +436,7 @@ public class MongoDbSnapshotChangeEventSource extends AbstractSnapshotChangeEven
         long exportStart = clock.currentTimeInMillis();
         LOGGER.info("\t Exporting data for collection '{}'", collectionId);
         notificationService.initialSnapshotNotificationService().notifyTableInProgress(offsets.getTheOnlyPartition(), offsets.getTheOnlyOffset(),
-                collectionId.identifier());
+                collectionId.namespace());
 
         mongo.execute("sync '" + collectionId + "'", client -> {
             final MongoDatabase database = client.getDatabase(collectionId.dbName());
@@ -476,7 +476,7 @@ public class MongoDbSnapshotChangeEventSource extends AbstractSnapshotChangeEven
                 }
 
                 notificationService.initialSnapshotNotificationService().notifyCompletedTable(offsets.getTheOnlyPartition(), offsets.getTheOnlyOffset(),
-                        collectionId.identifier());
+                        collectionId.namespace());
                 LOGGER.info("\t Finished snapshotting {} records for collection '{}'; total duration '{}'", docs, collectionId,
                         Strings.duration(clock.currentTimeInMillis() - exportStart));
                 snapshotProgressListener.dataCollectionSnapshotCompleted(snapshotContext.partition, collectionId, docs);
