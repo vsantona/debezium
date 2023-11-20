@@ -6,15 +6,16 @@
 
 package io.debezium.connector.mysql;
 
-import io.debezium.config.Configuration;
-import io.debezium.pipeline.notification.AbstractNotificationsIT;
-import io.debezium.util.Testing;
-import org.junit.After;
-import org.junit.Before;
-
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
+
+import io.debezium.config.Configuration;
+import io.debezium.pipeline.notification.AbstractNotificationsIT;
+import io.debezium.util.Testing;
 
 public class NotificationsIT extends AbstractNotificationsIT<MySqlConnector> {
 
@@ -41,11 +42,11 @@ public class NotificationsIT extends AbstractNotificationsIT<MySqlConnector> {
         }
     }
 
-
     @Override
     protected List<String> collections() {
         return List.of("a", "b", "c", "a4", "a42", "a_dt", "a_date", "debezium_signal");
     }
+
     @Override
     protected Class<MySqlConnector> connectorClass() {
         return MySqlConnector.class;

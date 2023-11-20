@@ -6,15 +6,16 @@
 
 package io.debezium.connector.sqlserver;
 
+import java.sql.SQLException;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
+
 import io.debezium.config.Configuration;
 import io.debezium.connector.sqlserver.util.TestHelper;
 import io.debezium.pipeline.notification.AbstractNotificationsIT;
 import io.debezium.util.Testing;
-import org.junit.After;
-import org.junit.Before;
-
-import java.sql.SQLException;
-import java.util.List;
 
 public class NotificationsIT extends AbstractNotificationsIT<SqlServerConnector> {
 
