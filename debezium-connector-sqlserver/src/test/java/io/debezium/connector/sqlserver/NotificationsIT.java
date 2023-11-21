@@ -53,6 +53,10 @@ public class NotificationsIT extends AbstractNotificationsIT<SqlServerConnector>
         TestHelper.dropTestDatabase();
     }
 
+    protected List<String> collections() {
+        return List.of("tablea", "tableb");
+    }
+
     @Override
     protected Class<SqlServerConnector> connectorClass() {
         return SqlServerConnector.class;
@@ -61,7 +65,7 @@ public class NotificationsIT extends AbstractNotificationsIT<SqlServerConnector>
     @Override
     protected Configuration.Builder config() {
         return TestHelper.defaultConfig()
-                .with(SqlServerConnectorConfig.SNAPSHOT_MODE, SqlServerConnectorConfig.SnapshotMode.SCHEMA_ONLY);
+                .with(SqlServerConnectorConfig.SNAPSHOT_MODE, SqlServerConnectorConfig.SnapshotMode.INITIAL);
     }
 
     @Override
