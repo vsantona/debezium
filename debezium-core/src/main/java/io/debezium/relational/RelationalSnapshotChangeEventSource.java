@@ -453,7 +453,10 @@ public abstract class RelationalSnapshotChangeEventSource<P extends Partition, O
                 boolean lastTable = tableOrder == tableCount && snapshotMaxThreads == 1;
                 String selectStatement = queryTables.get(tableId);
                 OptionalLong rowCount = rowCountTables.get(tableId);
-
+                notificationService.initialSnapshotNotificationService().notifyTableInProgress(
+                        snapshotContext.partition,
+                        snapshotContext.offset,
+                        tableId.table());
                 Callable<Void> callable = createDataEventsForTableCallable(sourceContext, snapshotContext, snapshotReceiver,
                         snapshotContext.tables.forTable(tableId), firstTable, lastTable, tableOrder++, tableCount, selectStatement, rowCount, connectionPool, offsets);
                 completionService.submit(callable);
@@ -512,7 +515,7 @@ public abstract class RelationalSnapshotChangeEventSource<P extends Partition, O
             JdbcConnection connection = connectionPool.poll();
             O offset = offsets.poll();
             try {
-                doCreateDataEventsForTable(sourceContext, snapshotContext.partition, offset, snapshotReceiver, table, firstTable, lastTable, tableOrder, tableCount,
+                doCreateDataEventsForTable(sourceContext, snapshotContext, offset, snapshotReceiver, table, firstTable, lastTable, tableOrder, tableCount,
                         selectStatement, rowCount, connection);
             }
             finally {
@@ -523,7 +526,8 @@ public abstract class RelationalSnapshotChangeEventSource<P extends Partition, O
         };
     }
 
-    private void doCreateDataEventsForTable(ChangeEventSourceContext sourceContext, P partition, O offset, SnapshotReceiver<P> snapshotReceiver, Table table,
+    private void doCreateDataEventsForTable(ChangeEventSourceContext sourceContext, RelationalSnapshotContext<P, O> snapshotContext, O offset,
+                                            SnapshotReceiver<P> snapshotReceiver, Table table,
                                             boolean firstTable, boolean lastTable, int tableOrder, int tableCount, String selectStatement, OptionalLong rowCount,
                                             JdbcConnection jdbcConnection)
             throws InterruptedException {
@@ -564,15 +568,15 @@ public abstract class RelationalSnapshotChangeEventSource<P extends Partition, O
                             LOGGER.info("\t Exported {} records for table '{}' after {}", rows, table.id(),
                                     Strings.duration(stop - exportStart));
                         }
-                        snapshotProgressListener.rowsScanned(partition, table.id(), rows);
+                        snapshotProgressListener.rowsScanned(snapshotContext.partition, table.id(), rows);
                         logTimer = getTableScanLogTimer();
                     }
 
                     hasNext = rs.next();
                     setSnapshotMarker(offset, firstTable, lastTable, rows == 1, !hasNext);
 
-                    dispatcher.dispatchSnapshotEvent(partition, table.id(),
-                            getChangeRecordEmitter(partition, offset, table.id(), row, sourceTableSnapshotTimestamp), snapshotReceiver);
+                    dispatcher.dispatchSnapshotEvent(snapshotContext.partition, table.id(),
+                            getChangeRecordEmitter(snapshotContext.partition, offset, table.id(), row, sourceTableSnapshotTimestamp), snapshotReceiver);
                 }
             }
             else {
@@ -581,7 +585,11 @@ public abstract class RelationalSnapshotChangeEventSource<P extends Partition, O
 
             LOGGER.info("\t Finished exporting {} records for table '{}' ({} of {} tables); total duration '{}'",
                     rows, table.id(), tableOrder, tableCount, Strings.duration(clock.currentTimeInMillis() - exportStart));
-            snapshotProgressListener.dataCollectionSnapshotCompleted(partition, table.id(), rows);
+            snapshotProgressListener.dataCollectionSnapshotCompleted(snapshotContext.partition, table.id(), rows);
+            LOGGER.info("notifyCompletedTable: " + table.id().table());
+            notificationService.initialSnapshotNotificationService().notifyCompletedTable(snapshotContext.partition,
+                    snapshotContext.offset,
+                    table.id().table());
         }
         catch (SQLException e) {
             throw new ConnectException("Snapshotting of table " + table.id() + " failed", e);
