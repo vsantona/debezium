@@ -88,9 +88,9 @@ public class NotificationsIT extends AbstractMongoConnectorIT {
         return TestHelper.getConfiguration(mongo)
                 .edit()
                 .with(MongoDbConnectorConfig.DATABASE_INCLUDE_LIST, DATABASE_NAME)
-                .with(MongoDbConnectorConfig.COLLECTION_INCLUDE_LIST, fullDataCollectionName() + ",dbA.c1,dbA.c2")
+                .with(MongoDbConnectorConfig.COLLECTION_INCLUDE_LIST, "dbA.c1,dbA.c2")
                 .with(MongoDbConnectorConfig.INCREMENTAL_SNAPSHOT_CHUNK_SIZE, 10)
-                .with(CommonConnectorConfig.SNAPSHOT_MODE_TABLES, "[A-z].*dbA.c1,[A-z].*dbA.c2")
+                .with(CommonConnectorConfig.SNAPSHOT_MODE_TABLES, "dbA.c1,dbA.c2")
                 .with(MongoDbConnectorConfig.SNAPSHOT_MODE, SnapshotMode.INITIAL);
     }
 
@@ -212,8 +212,8 @@ public class NotificationsIT extends AbstractMongoConnectorIT {
                 .hasFieldOrPropertyWithValue("type", "STARTED")
                 .hasFieldOrProperty("timestamp");
 
-        assertTableNotificationsSentToJmx(notifications, "c1");
-        assertTableNotificationsSentToJmx(notifications, "c2");
+        assertTableNotificationsSentToJmx(notifications, "dbA.c1");
+        assertTableNotificationsSentToJmx(notifications, "dbA.c2");
 
         assertThat(notifications.get(notifications.size() - 1))
                 .hasFieldOrPropertyWithValue("aggregateType", "Initial Snapshot")
